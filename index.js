@@ -6,11 +6,13 @@ const JSONdb = require('simple-json-db');
 const db = new JSONdb('db.json');
 
 const maxBytes = 9999999999;
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || 'localhost';
 
 const init = async () => {
 	const server = Hapi.server({
-		port: 3000,
-		host: 'localhost',
+		port: PORT,
+		host: HOST,
 		routes: {
 			cors: {
 				origin: ['*'], // an array of origins or 'ignore'
@@ -81,6 +83,17 @@ const init = async () => {
 			cors: true,
 			handler: async (request, h) => {
 				return db.JSON().favorites;
+			},
+		},
+	});
+
+	server.route({
+		method: 'GET',
+		path: '/',
+		options: {
+			cors: true,
+			handler: async (request, h) => {
+				return 'hello';
 			},
 		},
 	});
