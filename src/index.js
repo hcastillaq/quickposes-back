@@ -1,13 +1,9 @@
 'use strict';
-
 const Hapi = require('@hapi/hapi');
 const Jimp = require('jimp');
 const JSONdb = require('simple-json-db');
 const db = new JSONdb('db.json');
-
-const maxBytes = 9999999999;
-const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || 'localhost';
+const authController = require('./controllers/auth.controller');
 
 const init = async () => {
 	const server = Hapi.server({
@@ -95,6 +91,16 @@ const init = async () => {
 			handler: async (request, h) => {
 				return 'hello';
 			},
+		},
+	});
+
+	// auth register
+	server.route({
+		method: 'GET',
+		path: '/auth/register',
+		options: {
+			cors: true,
+			handler: authController.register,
 		},
 	});
 
