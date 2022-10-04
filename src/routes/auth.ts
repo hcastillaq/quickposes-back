@@ -58,7 +58,7 @@ export default (server: hapi.Server) => {
 							.code(400);
 					});
 			},
-			cors: true,
+			cors: false,
 			validate: {
 				payload: AuthScheme,
 			},
@@ -105,7 +105,7 @@ export default (server: hapi.Server) => {
 					return h.response({ message: error }).code(400);
 				}
 			},
-			cors: true,
+			cors: false,
 			validate: {
 				payload: AuthScheme,
 			},
