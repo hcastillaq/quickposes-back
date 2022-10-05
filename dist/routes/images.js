@@ -106,17 +106,23 @@ exports.default = (server) => {
         options: {
             cors: true,
             handler: (request, h) => __awaiter(void 0, void 0, void 0, function* () {
-                const payload = request.payload;
-                const userToken = (0, jwt_service_1.jwtDecode)(payload.token);
-                let favorites = [];
-                if (userToken) {
-                    // get user
-                    const user = yield user_schema_1.UserModel.findOne({ id: userToken.id });
-                    if (user) {
-                        favorites = user.favorites;
+                try {
+                    const payload = request.payload;
+                    const userToken = (0, jwt_service_1.jwtDecode)(payload.token);
+                    let favorites = [];
+                    if (userToken) {
+                        // get user
+                        const user = yield user_schema_1.UserModel.findOne({ id: userToken.id });
+                        if (user) {
+                            favorites = user.favorites;
+                        }
                     }
+                    return favorites;
                 }
-                return favorites;
+                catch (error) {
+                    console.log(error);
+                    return h.response({ error }).code(500);
+                }
             }),
             payload: {
                 maxBytes: MAX_BYTES,

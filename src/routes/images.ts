@@ -99,7 +99,7 @@ export default (server: hapi.Server) => {
 		options: {
 			cors: true,
 			handler: async (request: hapi.Request, h) => {
-				try{
+				try {
 					const payload: any = request.payload;
 					const userToken = jwtDecode(payload.token);
 					let favorites = [];
@@ -111,8 +111,9 @@ export default (server: hapi.Server) => {
 						}
 					}
 					return favorites;
-				}catch(error){
+				} catch (error) {
 					console.log(error);
+					return h.response({ error }).code(500);
 				}
 			},
 			payload: {
