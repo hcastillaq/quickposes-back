@@ -30,7 +30,7 @@ export default (server: hapi.Server) => {
 			}
 		},
 		options: {
-			cors: true,
+			cors: false,
 			payload: {
 				maxBytes: MAX_BYTES,
 			},
@@ -48,7 +48,7 @@ export default (server: hapi.Server) => {
 		method: 'post',
 		path: '/images/favorites/toggle',
 		options: {
-			cors: true,
+			cors: false,
 			handler: async (request: hapi.Request) => {
 				const payload: any = request.payload;
 				const userToken = jwtDecode(payload.token);
@@ -97,7 +97,7 @@ export default (server: hapi.Server) => {
 		method: 'post',
 		path: '/images/favorites',
 		options: {
-			cors: true,
+			cors: false,
 			handler: async (request: hapi.Request, h) => {
 				try {
 					const payload: any = request.payload;
