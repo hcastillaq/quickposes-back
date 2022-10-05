@@ -23,9 +23,7 @@ const init = () => __awaiter(void 0, void 0, void 0, function* () {
         port: PORT,
         host: HOST,
         routes: {
-            cors: {
-                origin: ['*'], // an array of origins or 'ignore'
-            },
+            cors: false,
         },
     });
     // routes

@@ -66,7 +66,6 @@ exports.default = (server) => {
                         .code(400);
                 });
             }),
-            cors: false,
             validate: {
                 payload: AuthScheme,
             },
@@ -111,7 +110,6 @@ exports.default = (server) => {
                     return h.response({ message: error }).code(400);
                 }
             }),
-            cors: false,
             validate: {
                 payload: AuthScheme,
             },
