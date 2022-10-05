@@ -99,17 +99,21 @@ export default (server: hapi.Server) => {
 		options: {
 			cors: true,
 			handler: async (request: hapi.Request, h) => {
-				const payload: any = request.payload;
-				const userToken = jwtDecode(payload.token);
-				let favorites = [];
-				if (userToken) {
-					// get user
-					const user = await UserModel.findOne({ id: userToken.id });
-					if (user) {
-						favorites = user.favorites;
+				try{
+					const payload: any = request.payload;
+					const userToken = jwtDecode(payload.token);
+					let favorites = [];
+					if (userToken) {
+						// get user
+						const user = await UserModel.findOne({ id: userToken.id });
+						if (user) {
+							favorites = user.favorites;
+						}
 					}
+					return favorites;
+				}catch(error){
+					console.log(error);
 				}
-				return favorites;
 			},
 			payload: {
 				maxBytes: MAX_BYTES,
