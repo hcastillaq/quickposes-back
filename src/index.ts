@@ -10,9 +10,7 @@ const init = async () => {
 		port: PORT,
 		host: HOST,
 		routes: {
-			cors: {
-				origin: ['*'], // an array of origins or 'ignore'
-			},
+			cors: false,
 		},
 	});
 
