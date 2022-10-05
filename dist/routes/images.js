@@ -121,6 +121,9 @@ exports.default = (server) => {
                 }
                 catch (error) {
                     console.log(error);
+                    if (error.name.toLowerCase() === 'TokenExpiredError'.toLowerCase()) {
+                        return h.response({ error: 'token expired' }).code(500);
+                    }
                     return h.response({ error }).code(500);
                 }
             }),
