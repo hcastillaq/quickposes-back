@@ -24,9 +24,7 @@ const init = () => __awaiter(void 0, void 0, void 0, function* () {
         host: HOST,
         routes: {
             cors: {
-                origin: ['*', 'https://quickposes.vercel.app'],
-                headers: ['Accept', 'Content-Type'],
-                additionalHeaders: ['X-Requested-With'],
+                origin: ['*'],
             },
         },
     });

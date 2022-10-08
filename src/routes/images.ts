@@ -30,7 +30,6 @@ export default (server: hapi.Server) => {
 			}
 		},
 		options: {
-			cors: false,
 			payload: {
 				maxBytes: MAX_BYTES,
 			},
@@ -97,7 +96,6 @@ export default (server: hapi.Server) => {
 		method: 'post',
 		path: '/images/favorites',
 		options: {
-			cors: false,
 			handler: async (request: hapi.Request, h) => {
 				try {
 					const payload: any = request.payload;

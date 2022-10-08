@@ -11,9 +11,7 @@ const init = async () => {
 		host: HOST,
 		routes: {
 			cors: {
-				origin: ['*', 'https://quickposes.vercel.app'],
-				headers: ['Accept', 'Content-Type'],
-				additionalHeaders: ['X-Requested-With'],
+				origin: ['*'],
 			},
 		},
 	});

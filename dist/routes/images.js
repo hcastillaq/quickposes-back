@@ -43,7 +43,6 @@ exports.default = (server) => {
             }
         }),
         options: {
-            cors: false,
             payload: {
                 maxBytes: MAX_BYTES,
             },
@@ -104,7 +103,6 @@ exports.default = (server) => {
         method: 'post',
         path: '/images/favorites',
         options: {
-            cors: false,
             handler: (request, h) => __awaiter(void 0, void 0, void 0, function* () {
                 try {
                     const payload = request.payload;
