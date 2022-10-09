@@ -21,28 +21,28 @@ exports.default = (server) => {
     server.route({
         method: 'POST',
         path: '/images/posterize',
-        handler: (request, h) => __awaiter(void 0, void 0, void 0, function* () {
-            const payload = request.payload;
-            const levels = payload.levels;
-            const base64 = payload.url.split('base64,')[1];
-            const buf = Buffer.from(base64, 'base64');
-            try {
-                const i = yield jimp_1.default.read(buf);
-                const src = yield i
-                    .posterize(levels)
-                    .greyscale()
-                    .getBase64Async(jimp_1.default.MIME_PNG);
-                return {
-                    base64: src,
-                };
-            }
-            catch (error) {
-                return {
-                    base64: payload.url,
-                };
-            }
-        }),
         options: {
+            handler: (request, h) => __awaiter(void 0, void 0, void 0, function* () {
+                const payload = request.payload;
+                const levels = payload.levels;
+                const base64 = payload.url.split('base64,')[1];
+                const buf = Buffer.from(base64, 'base64');
+                try {
+                    const i = yield jimp_1.default.read(buf);
+                    const src = yield i
+                        .posterize(levels)
+                        .greyscale()
+                        .getBase64Async(jimp_1.default.MIME_PNG);
+                    return {
+                        base64: src,
+                    };
+                }
+                catch (error) {
+                    return {
+                        base64: payload.url,
+                    };
+                }
+            }),
             payload: {
                 maxBytes: MAX_BYTES,
             },
@@ -59,7 +59,6 @@ exports.default = (server) => {
         method: 'post',
         path: '/images/favorites/toggle',
         options: {
-            cors: false,
             handler: (request) => __awaiter(void 0, void 0, void 0, function* () {
                 const payload = request.payload;
                 const userToken = (0, jwt_service_1.jwtDecode)(payload.token);

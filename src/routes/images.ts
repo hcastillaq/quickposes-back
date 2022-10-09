@@ -9,27 +9,27 @@ export default (server: hapi.Server) => {
 	server.route({
 		method: 'POST',
 		path: '/images/posterize',
-		handler: async (request: hapi.Request, h) => {
-			const payload: any = request.payload;
-			const levels = payload.levels;
-			const base64 = payload.url.split('base64,')[1];
-			const buf = Buffer.from(base64, 'base64');
-			try {
-				const i = await Jimp.read(buf);
-				const src = await i
-					.posterize(levels)
-					.greyscale()
-					.getBase64Async(Jimp.MIME_PNG);
-				return {
-					base64: src,
-				};
-			} catch (error) {
-				return {
-					base64: payload.url,
-				};
-			}
-		},
 		options: {
+			handler: async (request: hapi.Request, h) => {
+				const payload: any = request.payload;
+				const levels = payload.levels;
+				const base64 = payload.url.split('base64,')[1];
+				const buf = Buffer.from(base64, 'base64');
+				try {
+					const i = await Jimp.read(buf);
+					const src = await i
+						.posterize(levels)
+						.greyscale()
+						.getBase64Async(Jimp.MIME_PNG);
+					return {
+						base64: src,
+					};
+				} catch (error) {
+					return {
+						base64: payload.url,
+					};
+				}
+			},
 			payload: {
 				maxBytes: MAX_BYTES,
 			},
@@ -47,7 +47,6 @@ export default (server: hapi.Server) => {
 		method: 'post',
 		path: '/images/favorites/toggle',
 		options: {
-			cors: false,
 			handler: async (request: hapi.Request) => {
 				const payload: any = request.payload;
 				const userToken = jwtDecode(payload.token);
