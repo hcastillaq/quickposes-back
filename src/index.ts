@@ -1,28 +1,31 @@
-import hapi from '@hapi/hapi';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import express, { Express, Request, Response } from 'express';
 import { connectDB } from './db/mongo';
 import auth from './routes/auth';
 import images from './routes/images';
 
-const init = async () => {
-	const PORT = process.env.PORT || 3000;
-	const HOST = process.env.HOST || 'localhost';
-	const server = hapi.server({
-		port: PORT,
-		host: HOST,
-		routes: {
-			cors: {
-				origin: ['*'],
-			},
-		},
-	});
+const app: Express = express();
+const port = process.env.PORT || 3000;
 
-	// routes
-	images(server);
-	auth(server);
+app.use(
+	cors({
+		origin: '*',
+	})
+);
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '100mb' }));
 
-	await server.start();
-	console.log('Server running on %s', server.info.uri);
+app.get('/', (req: Request, res: Response) => {
+	res.send('Quick poses backend :)');
+});
+
+//load routes
+auth(app);
+images(app);
+
+app.listen(port, () => {
 	connectDB();
-};
-
-init();
+	console.log(`Server running on port ${port}`);
+});

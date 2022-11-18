@@ -1,129 +1,84 @@
-import hapi from '@hapi/hapi';
+import { Express } from 'express';
 import Jimp from 'jimp';
-import Joi from 'joi';
 import { UserModel } from '../db/schemas/user.schema';
 import { jwtDecode } from '../services/jwt.service';
 
-export default (server: hapi.Server) => {
-	const MAX_BYTES = 9999999999;
-	server.route({
-		method: 'POST',
-		path: '/images/posterize',
-		options: {
-			handler: async (request: hapi.Request, h) => {
-				const payload: any = request.payload;
-				const levels = payload.levels;
-				const base64 = payload.url.split('base64,')[1];
-				const buf = Buffer.from(base64, 'base64');
-				try {
-					const i = await Jimp.read(buf);
-					const src = await i
-						.posterize(levels)
-						.greyscale()
-						.getBase64Async(Jimp.MIME_PNG);
-					return {
-						base64: src,
-					};
-				} catch (error) {
-					return {
-						base64: payload.url,
-					};
-				}
-			},
-			payload: {
-				maxBytes: MAX_BYTES,
-			},
-			validate: {
-				payload: Joi.object({
-					levels: Joi.number().required(),
-					url: Joi.string().required(),
-					token: Joi.string().required(),
-				}),
-			},
-		},
+export default (app: Express) => {
+	app.post('/images/posterize', async (req, resp) => {
+		const payload: any = req.body;
+		const levels = payload.levels;
+		const base64 = payload.url.split('base64,')[1];
+		const buf = Buffer.from(base64, 'base64');
+
+		try {
+			const i = await Jimp.read(buf);
+			const src = await i
+				.posterize(levels)
+				.greyscale()
+				.getBase64Async(Jimp.MIME_PNG);
+
+			return resp.json({
+				base64: src,
+			});
+		} catch (error) {
+			return resp.json({
+				base64: payload.url,
+			});
+		}
 	});
 
-	server.route({
-		method: 'post',
-		path: '/images/favorites/toggle',
-		options: {
-			handler: async (request: hapi.Request) => {
-				const payload: any = request.payload;
-				const userToken = jwtDecode(payload.token);
-				let action = false;
-				if (userToken) {
-					// get user
-					const user = await UserModel.findOne({ id: userToken.id });
+	app.post('/images/favorites/toggle', async (req, resp) => {
+		const payload: any = req.body;
+		const userToken = jwtDecode(payload.token);
+		let action = false;
+		if (userToken) {
+			// get user
+			const user = await UserModel.findOne({ id: userToken.id });
 
-					if (user) {
-						// validate image exists
-						const find = user.favorites.find(
-							(baseUrl) => baseUrl === payload.baseUrl
-						);
-						if (!find) {
-							// add to favorites
-							user.favorites.push(payload.baseUrl);
-							await user.save();
-							action = true;
-						} else {
-							// remove from favorites
-							user.favorites = user.favorites.filter(
-								(baseUrl) => baseUrl !== payload.baseUrl
-							);
-							await user.save();
-							action = false;
-						}
-					}
+			if (user) {
+				// validate image exists
+				const find = user.favorites.find(
+					(baseUrl) => baseUrl === payload.baseUrl
+				);
+				if (!find) {
+					// add to favorites
+					user.favorites.push(payload.baseUrl);
+					await user.save();
+					action = true;
+				} else {
+					// remove from favorites
+					user.favorites = user.favorites.filter(
+						(baseUrl) => baseUrl !== payload.baseUrl
+					);
+					await user.save();
+					action = false;
 				}
-				return {
-					action,
-				};
-			},
-			payload: {
-				maxBytes: MAX_BYTES,
-			},
-			validate: {
-				payload: Joi.object({
-					baseUrl: Joi.string().required(),
-					token: Joi.string().required(),
-				}),
-			},
-		},
+			}
+		}
+		return resp.status(200).json({
+			action,
+		});
 	});
 
-	server.route({
-		method: 'post',
-		path: '/images/favorites',
-		options: {
-			handler: async (request: hapi.Request, h) => {
-				try {
-					const payload: any = request.payload;
-					const userToken = jwtDecode(payload.token);
-					let favorites = [];
-					if (userToken) {
-						// get user
-						const user = await UserModel.findOne({ id: userToken.id });
-						if (user) {
-							favorites = user.favorites;
-						}
-					}
-					return favorites;
-				} catch (error: any) {
-					console.log(error);
-					if (error.name.toLowerCase() === 'TokenExpiredError'.toLowerCase()) {
-						return h.response({ error: 'token expired' }).code(500);
-					}
-					return h.response({ error }).code(500);
+	app.post('/images/favorites', async (req, resp) => {
+		try {
+			const payload: any = req.body;
+			const userToken = jwtDecode(payload.token);
+			let favorites = [];
+			if (userToken) {
+				// get user
+				const user = await UserModel.findOne({ id: userToken.id });
+				if (user) {
+					favorites = user.favorites;
 				}
-			},
-			payload: {
-				maxBytes: MAX_BYTES,
-			},
-			validate: {
-				payload: Joi.object({
-					token: Joi.string().required(),
-				}),
-			},
-		},
+			}
+			return resp.status(200).send(favorites);
+		} catch (error: any) {
+			console.log(error);
+			if (error.name.toLowerCase() === 'TokenExpiredError'.toLowerCase()) {
+				return resp.status(500).json({ error: 'token expired' });
+			}
+			return resp.status(500).json({ error });
+		}
 	});
 };
