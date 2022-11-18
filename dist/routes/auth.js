@@ -13,106 +13,75 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const joi_1 = __importDefault(require("joi"));
 const uuid_1 = require("uuid");
 const user_schema_1 = require("../db/schemas/user.schema");
 const jwt_service_1 = require("../services/jwt.service");
-const AuthScheme = joi_1.default.object({
-    email: joi_1.default.string().email({ tlds: { allow: false } }),
-    password: joi_1.default.string().required(),
-});
-exports.default = (server) => {
+exports.default = (app) => {
     const ROUNDS = 10;
     //register
-    server.route({
-        method: 'POST',
-        path: '/auth/register',
-        options: {
-            handler: (request, h) => __awaiter(void 0, void 0, void 0, function* () {
-                const payload = request.payload;
-                let { email, password } = payload;
-                //check if user exists
-                const user = yield user_schema_1.UserModel.findOne({ email });
-                if (user) {
-                    return h
-                        .response({
-                        message: 'User already exists',
-                        statusCode: 400,
-                    })
-                        .code(400);
-                }
-                password = yield bcrypt_1.default.hash(password, ROUNDS);
-                const newUser = new user_schema_1.UserModel({
-                    email,
-                    password,
-                    favorites: [],
-                    id: (0, uuid_1.v4)(),
-                });
-                return newUser
-                    .save()
-                    .then((user) => {
-                    return h
-                        .response({
-                        message: 'User created successfully',
-                        result: (0, jwt_service_1.jwtEncode)({ email: newUser.email, id: newUser.id }),
-                    })
-                        .code(201);
-                })
-                    .catch((err) => {
-                    return h
-                        .response({
-                        message: err.message,
-                    })
-                        .code(400);
-                });
-            }),
-            validate: {
-                payload: AuthScheme,
-            },
-        },
-    });
+    app.post('/auth/register', (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+        const payload = req.body;
+        let { email, password } = payload;
+        //check if user exists
+        const user = yield user_schema_1.UserModel.findOne({ email });
+        if (user) {
+            return resp.status(400).json({
+                message: 'User already exists',
+                statusCode: 400,
+            });
+        }
+        password = yield bcrypt_1.default.hash(password, ROUNDS);
+        const newUser = new user_schema_1.UserModel({
+            email,
+            password,
+            favorites: [],
+            id: (0, uuid_1.v4)(),
+        });
+        return newUser
+            .save()
+            .then(() => {
+            return resp.status(201).json({
+                message: 'User created successfully',
+                result: (0, jwt_service_1.jwtEncode)({ email: newUser.email, id: newUser.id }),
+            });
+        })
+            .catch((err) => {
+            return resp.status(400).json({
+                message: err.message,
+            });
+        });
+    }));
     //login
-    server.route({
-        method: 'POST',
-        path: '/auth/login',
-        options: {
-            handler: (request, h) => __awaiter(void 0, void 0, void 0, function* () {
-                try {
-                    const payload = request.payload;
-                    let { email, password } = payload;
-                    const user = yield user_schema_1.UserModel.findOne({ email });
-                    //check if user exists
-                    if (!user) {
-                        return h
-                            .response({
-                            message: 'User not found',
-                            statusCode: 400,
-                        })
-                            .code(400);
-                    }
-                    //check if password is correct
-                    const isValid = yield bcrypt_1.default.compare(password, user.password || '');
-                    if (!isValid) {
-                        return h
-                            .response({
-                            message: 'Invalid password',
-                            statusCode: 400,
-                        })
-                            .code(400);
-                    }
-                    return h.response({
-                        message: 'Login successful',
-                        result: (0, jwt_service_1.jwtEncode)({ email: user.email, id: user.id }),
-                    });
-                }
-                catch (error) {
-                    console.error(error);
-                    return h.response({ message: error }).code(400);
-                }
-            }),
-            validate: {
-                payload: AuthScheme,
-            },
-        },
-    });
+    app.post('/auth/login', (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const payload = req.body;
+            let { email, password } = payload;
+            const user = yield user_schema_1.UserModel.findOne({ email });
+            //check if user exists
+            if (!user) {
+                return resp.status(400).json({
+                    message: 'User not found',
+                    statusCode: 400,
+                });
+            }
+            //check if password is correct
+            const isValid = yield bcrypt_1.default.compare(password, user.password || '');
+            if (!isValid) {
+                return resp
+                    .json({
+                    message: 'Invalid password',
+                    statusCode: 400,
+                })
+                    .status(400);
+            }
+            return resp.json({
+                message: 'Login successful',
+                result: (0, jwt_service_1.jwtEncode)({ email: user.email, id: user.id }),
+            });
+        }
+        catch (error) {
+            console.error(error);
+            return resp.json({ message: error }).status(400);
+        }
+    }));
 };
