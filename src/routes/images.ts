@@ -28,36 +28,44 @@ export default (app: Express) => {
 	});
 
 	app.post('/images/favorites/toggle', async (req, resp) => {
-		const payload: any = req.body;
-		const userToken = jwtDecode(payload.token);
-		let action = false;
-		if (userToken) {
-			// get user
-			const user = await UserModel.findOne({ id: userToken.id });
+		try {
+			const payload: any = req.body;
+			const userToken = jwtDecode(payload.token);
+			let action = false;
+			if (userToken) {
+				// get user
+				const user = await UserModel.findOne({ id: userToken.id });
 
-			if (user) {
-				// validate image exists
-				const find = user.favorites.find(
-					(baseUrl) => baseUrl === payload.baseUrl
-				);
-				if (!find) {
-					// add to favorites
-					user.favorites.push(payload.baseUrl);
-					await user.save();
-					action = true;
-				} else {
-					// remove from favorites
-					user.favorites = user.favorites.filter(
-						(baseUrl) => baseUrl !== payload.baseUrl
+				if (user) {
+					// validate image exists
+					const find = user.favorites.find(
+						(baseUrl) => baseUrl === payload.baseUrl
 					);
-					await user.save();
-					action = false;
+					if (!find) {
+						// add to favorites
+						user.favorites.push(payload.baseUrl);
+						await user.save();
+						action = true;
+					} else {
+						// remove from favorites
+						user.favorites = user.favorites.filter(
+							(baseUrl) => baseUrl !== payload.baseUrl
+						);
+						await user.save();
+						action = false;
+					}
 				}
 			}
+			return resp.status(200).json({
+				action,
+			});
+		} catch (error: any) {
+			console.log(error);
+			if (error.name.toLowerCase() === 'TokenExpiredError'.toLowerCase()) {
+				return resp.status(500).json({ error: 'token expired' });
+			}
+			return resp.status(500).json({ error });
 		}
-		return resp.status(200).json({
-			action,
-		});
 	});
 
 	app.post('/images/favorites', async (req, resp) => {

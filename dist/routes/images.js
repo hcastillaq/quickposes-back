@@ -38,32 +38,41 @@ exports.default = (app) => {
         }
     }));
     app.post('/images/favorites/toggle', (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
-        const payload = req.body;
-        const userToken = (0, jwt_service_1.jwtDecode)(payload.token);
-        let action = false;
-        if (userToken) {
-            // get user
-            const user = yield user_schema_1.UserModel.findOne({ id: userToken.id });
-            if (user) {
-                // validate image exists
-                const find = user.favorites.find((baseUrl) => baseUrl === payload.baseUrl);
-                if (!find) {
-                    // add to favorites
-                    user.favorites.push(payload.baseUrl);
-                    yield user.save();
-                    action = true;
-                }
-                else {
-                    // remove from favorites
-                    user.favorites = user.favorites.filter((baseUrl) => baseUrl !== payload.baseUrl);
-                    yield user.save();
-                    action = false;
+        try {
+            const payload = req.body;
+            const userToken = (0, jwt_service_1.jwtDecode)(payload.token);
+            let action = false;
+            if (userToken) {
+                // get user
+                const user = yield user_schema_1.UserModel.findOne({ id: userToken.id });
+                if (user) {
+                    // validate image exists
+                    const find = user.favorites.find((baseUrl) => baseUrl === payload.baseUrl);
+                    if (!find) {
+                        // add to favorites
+                        user.favorites.push(payload.baseUrl);
+                        yield user.save();
+                        action = true;
+                    }
+                    else {
+                        // remove from favorites
+                        user.favorites = user.favorites.filter((baseUrl) => baseUrl !== payload.baseUrl);
+                        yield user.save();
+                        action = false;
+                    }
                 }
             }
+            return resp.status(200).json({
+                action,
+            });
         }
-        return resp.status(200).json({
-            action,
-        });
+        catch (error) {
+            console.log(error);
+            if (error.name.toLowerCase() === 'TokenExpiredError'.toLowerCase()) {
+                return resp.status(500).json({ error: 'token expired' });
+            }
+            return resp.status(500).json({ error });
+        }
     }));
     app.post('/images/favorites', (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
         try {
