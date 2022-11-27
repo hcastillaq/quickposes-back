@@ -59,20 +59,18 @@ exports.default = (app) => {
             const user = yield user_schema_1.UserModel.findOne({ email });
             //check if user exists
             if (!user) {
-                return resp.status(400).json({
+                return resp.status(401).json({
                     message: 'User not found',
-                    statusCode: 400,
+                    statusCode: 401,
                 });
             }
             //check if password is correct
             const isValid = yield bcrypt_1.default.compare(password, user.password || '');
             if (!isValid) {
-                return resp
-                    .json({
+                return resp.status(401).json({
                     message: 'Invalid password',
-                    statusCode: 400,
-                })
-                    .status(400);
+                    statusCode: 401,
+                });
             }
             return resp.json({
                 message: 'Login successful',

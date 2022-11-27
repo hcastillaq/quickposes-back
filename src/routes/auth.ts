@@ -51,22 +51,19 @@ export default (app: Express) => {
 			const user = await UserModel.findOne({ email });
 			//check if user exists
 			if (!user) {
-				return resp.status(400).json({
+				return resp.status(401).json({
 					message: 'User not found',
-					statusCode: 400,
+					statusCode: 401,
 				});
 			}
 
 			//check if password is correct
 			const isValid = await bcrypt.compare(password, user.password || '');
-
 			if (!isValid) {
-				return resp
-					.json({
-						message: 'Invalid password',
-						statusCode: 400,
-					})
-					.status(400);
+				return resp.status(401).json({
+					message: 'Invalid password',
+					statusCode: 401,
+				});
 			}
 			return resp.json({
 				message: 'Login successful',
