@@ -15,11 +15,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const uuid_1 = require("uuid");
 const user_schema_1 = require("../db/schemas/user.schema");
+const auth_service_1 = require("../services/auth.service");
 const jwt_service_1 = require("../services/jwt.service");
 exports.default = (app) => {
     const ROUNDS = 10;
+    app.post('/auth', (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+        const payload = req.body;
+        if (!payload.aud) {
+            return resp.status(400).json({
+                message: 'Invalid payload',
+                statusCode: 400,
+            });
+        }
+        let user = yield auth_service_1.authService.getUser(payload.email);
+        if (!user) {
+            user = yield auth_service_1.authService.register(payload);
+        }
+        return resp.json({
+            message: 'Login successful',
+            result: (0, jwt_service_1.jwtEncode)({ email: user.email, id: user.id }),
+        });
+    }));
     //register
-    app.post('/auth/register', (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+    app.post('/auth/register2', (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
         const payload = req.body;
         let { email, password } = payload;
         //check if user exists
@@ -52,7 +70,7 @@ exports.default = (app) => {
         });
     }));
     //login
-    app.post('/auth/login', (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+    app.post('/auth/login2', (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const payload = req.body;
             let { email, password } = payload;

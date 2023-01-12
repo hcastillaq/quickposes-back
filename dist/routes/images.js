@@ -67,7 +67,6 @@ exports.default = (app) => {
             });
         }
         catch (error) {
-            console.log(error);
             if (error.name.toLowerCase() === 'TokenExpiredError'.toLowerCase()) {
                 return resp.status(500).json({ error: 'token expired' });
             }
@@ -89,7 +88,6 @@ exports.default = (app) => {
             return resp.status(200).send(favorites);
         }
         catch (error) {
-            console.log(error);
             if (error.name.toLowerCase() === 'TokenExpiredError'.toLowerCase()) {
                 return resp.status(500).json({ error: 'token expired' });
             }
