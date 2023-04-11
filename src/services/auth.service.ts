@@ -1,19 +1,13 @@
-import bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid';
-import { UserModel } from '../db/schemas/user.schema';
-import { User } from '../interfaces/user';
+import bcrypt from "bcrypt";
+import { v4 as uuidv4 } from "uuid";
+import { UserModel } from "../db/schemas/user.schema";
+import { User } from "../interfaces/user";
 
 const ROUNDS = 10;
 
-const getUser = (email: string): Promise<false | User> => {
-	return new Promise(async (resolve, reject) => {
-		const user = await UserModel.findOne({ email });
-		if (!user) {
-			resolve(false);
-		} else {
-			resolve(user as User);
-		}
-	});
+const getUser = async (email: string): Promise<false | User> => {
+	const user = await UserModel.findOne({ email });
+	return user ? (user as User) : false;
 };
 
 const login = (email: string, password: string) => {};
